@@ -77,9 +77,9 @@ async function searchMultipleParts() {
     }
 
     // IMPORTANT: Create a NEW webhook in n8n for this and paste the URL here
-    const multiPartWebhookUrl = 'PASTE_YOUR_NEW_N8N_WEBHOOK_URL_HERE';
+    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
     
-    if (multiPartWebhookUrl === 'PASTE_YOUR_NEW_N8N_WEBHOOK_URL_HERE') {
+    if (multiPartWebhookUrl === 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9') {
         alert('Developer: Please update the multiPartWebhookUrl in script.js');
         return;
     }
