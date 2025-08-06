@@ -77,7 +77,7 @@ async function searchMultipleParts() {
     }
 
     // IMPORTANT: This should be your n8n PRODUCTION URL for the multi-part workflow
-    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
+    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
     
     // The problematic 'if' check has been removed.
 
