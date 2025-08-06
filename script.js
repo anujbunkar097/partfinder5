@@ -76,14 +76,10 @@ async function searchMultipleParts() {
         return;
     }
 
-    // IMPORTANT: Create a NEW webhook in n8n for this and paste the URL here
+    // IMPORTANT: This should be your n8n PRODUCTION URL for the multi-part workflow
     const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
     
-    if (multiPartWebhookUrl === 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9') {
-        alert('Developer: Please update the multiPartWebhookUrl in script.js');
-        return;
-    }
-
+    // The problematic 'if' check has been removed.
 
     const formData = new FormData();
     // The key 'file' must match what you set in the n8n webhook's 'Binary Property' field
@@ -99,9 +95,9 @@ async function searchMultipleParts() {
         const resultData = await response.json();
         console.log("RAW DATA (MULTI) FROM N8N:", resultData);
         
-        // You might need a different display function for multi-part results
-        // For now, we'll reuse the existing one, assuming a similar structure.
-        displayResults(resultData);
+        // The response from the aggregator code node is an array with one item
+        // that contains the final summary and results list.
+        displayResults(resultData[0].json);
 
     } catch (error) {
         console.error('Error:', error);
@@ -149,7 +145,9 @@ function displayResults(data) {
     
     // Display the main summary
     if (data.summary) {
-        summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong> ${data.summary}</p>`;
+        // Replace newlines in the summary with <br> tags for HTML display
+        const formattedSummary = data.summary.replace(/\\n/g, '<br>');
+        summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong><br>${formattedSummary}</p>`;
     }
 
     const results = data.results;
