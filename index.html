@@ -11,6 +11,7 @@
         <h1>🔍 Appliance Part Finder</h1>
         <p>Search for a single part or upload a CSV for multiple parts.</p>
 
+        <!-- Search Type Selector -->
         <div class="search-type-selector">
             <label>
                 <input type="radio" name="searchType" value="single" checked> Single Part
@@ -20,6 +21,7 @@
             </label>
         </div>
 
+        <!-- Single Part Search Form -->
         <div id="singlePartForm">
             <p>Enter a part number to search across major supplier websites.</p>
             <div class="search-box">
@@ -28,18 +30,19 @@
             </div>
         </div>
 
+        <!-- Multi-Part Search Form (initially hidden) -->
         <div id="multiPartForm" class="hidden">
-            <p>Upload a CSV file with one part number per row in the first column (header should be `part_number`).</p>
+            <p>Upload a CSV file with one part number per row in the first column.</p>
             <div class="search-box">
                 <input type="file" id="csvFileInput" accept=".csv">
                 <button id="searchMultiButton">Upload & Analyze</button>
             </div>
         </div>
         
+        <!-- Loader and Results -->
         <div id="loader" class="loader hidden"></div>
-        
-        <div id="resultsContainer" class="table-container">
-            </div>
+        <div id="summaryContainer"></div>
+        <div id="resultsContainer"></div>
     </div>
     <script src="script.js"></script>
 </body>
