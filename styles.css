@@ -4,20 +4,21 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top */
+    align-items: center;
     min-height: 100vh;
     margin: 0;
-    padding: 2rem;
+    padding: 1rem;
 }
 .container {
     background: white;
-    padding: 2rem;
+    padding: 2rem 3rem;
     border-radius: 12px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.1);
     text-align: center;
-    width: 100%;
-    max-width: 900px; /* Wider container for the table */
+    max-width: 600px;
+    width: 90%;
 }
+/* New styles for the search type selector */
 .search-type-selector {
     display: flex;
     justify-content: center;
@@ -30,16 +31,17 @@ body {
     cursor: pointer;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    transition: background-color: 0.3s;
+    transition: background-color 0.3s;
 }
 input[type="radio"] {
-    display: none;
+    display: none; /* Hide the actual radio button */
 }
 input[type="radio"]:checked + label {
     background-color: #eef7ff;
     color: #007bff;
     font-weight: bold;
 }
+
 .search-box {
     display: flex;
     gap: 10px;
@@ -52,6 +54,7 @@ input[type="radio"]:checked + label {
     border-radius: 8px;
     font-size: 1rem;
 }
+/* Style the file input button */
 #csvFileInput::file-selector-button {
     padding: 10px 15px;
     border: none;
@@ -65,6 +68,8 @@ input[type="radio"]:checked + label {
 #csvFileInput::file-selector-button:hover {
      background-color: #0056b3;
 }
+
+
 #searchButton, #searchMultiButton {
     padding: 12px 20px;
     border: none;
@@ -78,12 +83,15 @@ input[type="radio"]:checked + label {
 #searchButton:hover, #searchMultiButton:hover {
     background-color: #0056b3;
 }
+
+/* Utility class to hide elements */
 .hidden {
     display: none;
 }
+
 .loader {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
+    border: 4px solid #f3f3f3; /* Light grey circle */
+    border-top: 4px solid #3498db; /* Blue spinning part */
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -94,50 +102,30 @@ input[type="radio"]:checked + label {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
-/* Table Styles */
-.table-container {
-    margin-top: 2rem;
-    width: 100%;
-    overflow-x: auto; /* For responsiveness on small screens */
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
+#summaryContainer {
+    background-color: #eef7ff;
+    border-left: 5px solid #007bff;
+    padding: 1rem 1.5rem;
     text-align: left;
+    margin: 2rem 0;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    line-height: 1.6;
 }
-th, td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #ddd;
+.result-card {
+    border: 1px solid #eee;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s, transform 0.3s;
 }
-thead th {
-    background-color: #f4f7f6;
-    font-weight: bold;
-    color: #333;
+.result-card.best-bet {
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+    transform: translateY(-3px);
 }
-tbody tr:hover {
-    background-color: #f9f9f9;
-}
-td a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-td a:hover {
-    text-decoration: underline;
-}
-.recommendation-cell p {
-    margin: 0;
-    line-height: 1.5;
-}
-.recommendation-cell strong {
-    display: inline-block;
-    min-width: 90px;
-}
-.availability-in-stock {
-    color: #28a745;
-    font-weight: bold;
-}
-.availability-other {
-    color: #dc3545;
-}
+.result-card h3 { margin-top: 0; }
+.result-card a { color: #007bff; text-decoration: none; }
+.result-card a:hover { text-decoration: underline; }
