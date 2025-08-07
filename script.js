@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- NEW: Event listeners for switching search modes ---
     const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
     const singlePartForm = document.getElementById('singlePartForm');
     const multiPartForm = document.getElementById('multiPartForm');
@@ -13,13 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 singlePartForm.classList.add('hidden');
                 multiPartForm.classList.remove('hidden');
             }
-            // Clear results when switching modes
             document.getElementById('resultsContainer').innerHTML = '';
             document.getElementById('summaryContainer').innerHTML = '';
         });
     });
 
-    // --- Event listener for the original search button ---
     document.getElementById('searchButton').addEventListener('click', searchSinglePart);
     document.getElementById('partNumberInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -27,46 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- NEW: Event listener for the new multi-part search button ---
     document.getElementById('searchMultiButton').addEventListener('click', searchMultipleParts);
 });
 
-
-// --- This function is the original searchParts, renamed for clarity ---
+// Note: Update this URL if you have a separate single-part webhook
 async function searchSinglePart() {
-    const partNumber = document.getElementById('partNumberInput').value;
-    if (!partNumber) {
-        alert('Please enter a part number.');
-        return;
-    }
-    
-    // This is your original webhook URL for single part searches
-    const webhookUrl = 'https://transformco.app.n8n.cloud/webhook/2a1d2507-373b-43a7-9ec9-3965b56dbcc3';
-    const payload = { partNumber: partNumber };
-
-    // Show loader and disable button
-    toggleLoading(true);
-
-    try {
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const responseData = await response.json();
-        console.log("RAW DATA (SINGLE) FROM N8N:", responseData);
-        // The data is an array with one item, so we must extract that first item.
-        const resultData = responseData[0];
-        displayResults(resultData);
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('resultsContainer').innerHTML = `<p style="color: red;">An error occurred during the search.</p>`;
-    } finally {
-        toggleLoading(false);
-    }
+    alert("Single part search is not yet configured with the new batch workflow.");
+    // Implementation for single part search would go here if needed.
 }
 
-// --- NEW: This function handles the CSV upload ---
 async function searchMultipleParts() {
     const fileInput = document.getElementById('csvFileInput');
     const file = fileInput.files[0];
@@ -76,11 +42,11 @@ async function searchMultipleParts() {
         return;
     }
 
-    // IMPORTANT: This should be your n8n PRODUCTION URL for the multi-part workflow
-    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9'; // Using production URL now
-    
+    // THIS IS YOUR PRODUCTION N8N WEBHOOK URL FOR THE MULTI-PART WORKFLOW
+    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file); // 'file' must match binary property in Webhook node
 
     toggleLoading(true);
 
@@ -91,10 +57,7 @@ async function searchMultipleParts() {
         });
         const resultData = await response.json();
         console.log("RAW DATA (MULTI) FROM N8N:", resultData);
-        
-        // --- THIS IS THE FIX ---
-        // The data is an array with one object inside. We need to grab that first object.
-        displayResults(resultData[0]);
+        displayResults(resultData);
 
     } catch (error) {
         console.error('Error:', error);
@@ -104,19 +67,15 @@ async function searchMultipleParts() {
     }
 }
 
-
-// --- NEW: Helper function to manage UI state ---
 function toggleLoading(isLoading) {
     const loader = document.getElementById('loader');
     const searchButton = document.getElementById('searchButton');
     const searchMultiButton = document.getElementById('searchMultiButton');
     const resultsContainer = document.getElementById('resultsContainer');
-    const summaryContainer = document.getElementById('summaryContainer');
 
     if (isLoading) {
         loader.classList.remove('hidden');
         resultsContainer.innerHTML = '';
-        summaryContainer.innerHTML = '';
         searchButton.disabled = true;
         searchMultiButton.disabled = true;
     } else {
@@ -126,57 +85,75 @@ function toggleLoading(isLoading) {
     }
 }
 
-// This function can now be used for both single and multi-part results
 function displayResults(data) {
     const resultsContainer = document.getElementById('resultsContainer');
-    const summaryContainer = document.getElementById('summaryContainer');
-    
     resultsContainer.innerHTML = '';
-    summaryContainer.innerHTML = '';
 
-    if (!data) {
-        resultsContainer.innerHTML = '<p>No data object was found in the response.</p>';
-        return;
-    }
-    
-    // Display the main summary
-    if (data.summary) {
-        // Replace newline characters from n8n with HTML line breaks
-        const formattedSummary = data.summary.replace(/\n/g, '<br>');
-        summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong></p><div>${formattedSummary}</div>`;
-    }
-
-    const results = data.results;
-
-    if (!results || results.length === 0) {
-        resultsContainer.innerHTML = '<p>No detailed results found.</p>';
+    if (!data || data.length === 0) {
+        resultsContainer.innerHTML = '<p>No results found for the uploaded parts.</p>';
         return;
     }
 
-    // Loop through and display each result card
-    results.forEach(result => {
-        const card = document.createElement('div');
-        card.className = 'result-card';
+    const table = document.createElement('table');
+    table.className = 'results-table';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Part Number</th>
+                <th>Vendor Option</th>
+                <th>AI Recommendation</th>
+            </tr>
+        </thead>
+    `;
+    const tbody = document.createElement('tbody');
 
-        if (result.isBest) {
-            card.classList.add('best-bet');
-        }
-        
-        const partNumberInfo = result.partNumber ? `<p><strong>Part Number:</strong> ${result.partNumber}</p>` : '';
+    const formatVendorCell = (result) => {
         const title = result.site || 'Unknown Site';
-        const price = result.price || 'Not available';
-        const availability = result.availability || 'Not specified';
+        const price = result.price || 'N/A';
+        const availability = result.availability || 'Not Specified';
         const url = result.url || '#';
-        const deliveryTime = result.deliveryTime || 'Not available';
-        const bestBetBadge = result.isBest ? '🏆 Best Option' : '';
+        const stockColor = availability && availability.toUpperCase().includes('IN STOCK') ? 'green' : 'red';
 
-        card.innerHTML = `
-            <h3><a href="${url}" target="_blank">${title}</a> <span style="color: #28a745; font-weight: bold;">${bestBetBadge}</span></h3>
-            ${partNumberInfo}
-            <p><strong>Price:</strong> ${price}</p>
-            <p><strong>Availability:</strong> <span style="color: ${availability && availability.toUpperCase().includes('IN STOCK') ? 'green' : 'red'};">${availability}</span></p>
-            <p><strong>Delivery:</strong> 🚚 ${deliveryTime}</p>
+        return `
+            <div class="vendor-details">
+                <strong><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></strong>
+                <div><strong>Price:</strong> ${price}</div>
+                <div><strong>Stock:</strong> <span style="color: ${stockColor};">${availability}</span></div>
+            </div>
         `;
-        resultsContainer.appendChild(card);
+    };
+
+    data.forEach(partData => {
+        const partNumber = partData.partNumber;
+        const recommendation = partData.recommendation || 'No recommendation provided.';
+        const results = partData.results || [];
+        const rowspan = results.length > 0 ? results.length : 1;
+
+        if (results.length > 0) {
+            results.forEach((result, index) => {
+                const tr = document.createElement('tr');
+                if (index === 0) {
+                    tr.innerHTML = `
+                        <td class="part-number-cell" rowspan="${rowspan}">${partNumber}</td>
+                        <td>${formatVendorCell(result)}</td>
+                        <td class="recommendation-cell" rowspan="${rowspan}">${recommendation}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `<td>${formatVendorCell(result)}</td>`;
+                }
+                tbody.appendChild(tr);
+            });
+        } else {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="part-number-cell">${partNumber}</td>
+                <td>No results found.</td>
+                <td class="recommendation-cell">${recommendation}</td>
+            `;
+            tbody.appendChild(tr);
+        }
     });
+
+    table.appendChild(tbody);
+    resultsContainer.appendChild(table);
 }
