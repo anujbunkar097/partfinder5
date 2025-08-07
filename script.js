@@ -77,12 +77,9 @@ async function searchMultipleParts() {
     }
 
     // IMPORTANT: This should be your n8n PRODUCTION URL for the multi-part workflow
-    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
+    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9'; // Using production URL now
     
-    // The problematic 'if' check has been removed.
-
     const formData = new FormData();
-    // The key 'file' must match what you set in the n8n webhook's 'Binary Property' field
     formData.append('file', file);
 
     toggleLoading(true);
@@ -90,14 +87,14 @@ async function searchMultipleParts() {
     try {
         const response = await fetch(multiPartWebhookUrl, {
             method: 'POST',
-            body: formData // No 'Content-Type' header needed, the browser sets it for FormData
+            body: formData
         });
         const resultData = await response.json();
         console.log("RAW DATA (MULTI) FROM N8N:", resultData);
         
-        // The response from the aggregator code node is an array with one item
-        // that contains the final summary and results list.
-        displayResults(resultData[0].json);
+        // --- THIS IS THE FIX ---
+        // The data is an array with one object inside. We need to grab that first object.
+        displayResults(resultData[0]);
 
     } catch (error) {
         console.error('Error:', error);
@@ -134,7 +131,6 @@ function displayResults(data) {
     const resultsContainer = document.getElementById('resultsContainer');
     const summaryContainer = document.getElementById('summaryContainer');
     
-    // Clear previous results
     resultsContainer.innerHTML = '';
     summaryContainer.innerHTML = '';
 
@@ -145,9 +141,9 @@ function displayResults(data) {
     
     // Display the main summary
     if (data.summary) {
-        // Replace newlines in the summary with <br> tags for HTML display
-        const formattedSummary = data.summary.replace(/\\n/g, '<br>');
-        summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong><br>${formattedSummary}</p>`;
+        // Replace newline characters from n8n with HTML line breaks
+        const formattedSummary = data.summary.replace(/\n/g, '<br>');
+        summaryContainer.innerHTML = `<p><strong>AI Analysis:</strong></p><div>${formattedSummary}</div>`;
     }
 
     const results = data.results;
@@ -166,9 +162,7 @@ function displayResults(data) {
             card.classList.add('best-bet');
         }
         
-        // --- NEW: Handle part numbers in multi-result display ---
         const partNumberInfo = result.partNumber ? `<p><strong>Part Number:</strong> ${result.partNumber}</p>` : '';
-
         const title = result.site || 'Unknown Site';
         const price = result.price || 'Not available';
         const availability = result.availability || 'Not specified';
