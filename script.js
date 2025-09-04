@@ -43,7 +43,7 @@ async function searchMultipleParts() {
     }
 
     // THIS IS YOUR PRODUCTION N8N WEBHOOK URL FOR THE MULTI-PART WORKFLOW
-    const multiPartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
+    const multiPartWebhookUrl = 'https://n8n.srv971243.hstgr.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
 
     const formData = new FormData();
     formData.append('file', file); // 'file' must match binary property in Webhook node
