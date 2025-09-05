@@ -1,9 +1,13 @@
-:Appliance Part Finder:script.js
 document.addEventListener('DOMContentLoaded', () => {
     const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
     const singlePartForm = document.getElementById('singlePartForm');
     const multiPartForm = document.getElementById('multiPartForm');
+    const searchButton = document.getElementById('searchButton');
+    const searchMultiButton = document.getElementById('searchMultiButton');
+    const partNumberInput = document.getElementById('partNumberInput');
+    const csvFileInput = document.getElementById('csvFileInput');
 
+    // Attach change listener to radio buttons
     searchTypeRadios.forEach(radio => {
         radio.addEventListener('change', (event) => {
             if (event.target.value === 'single') {
@@ -18,17 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('searchButton').addEventListener('click', searchSinglePart);
-    document.getElementById('partNumberInput').addEventListener('keypress', function(e) {
+    // Attach click and keypress listeners for single-part search
+    searchButton.addEventListener('click', searchSinglePart);
+    partNumberInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             searchSinglePart();
         }
     });
 
-    document.getElementById('searchMultiButton').addEventListener('click', searchMultipleParts);
+    // Attach click listener for multi-part search
+    searchMultiButton.addEventListener('click', searchMultipleParts);
 });
 
-// New function for single-part search
 async function searchSinglePart() {
     const partNumberInput = document.getElementById('partNumberInput');
     const partNumber = partNumberInput.value.trim();
@@ -38,9 +43,8 @@ async function searchSinglePart() {
         return;
     }
 
-    // THIS IS THE PRODUCTION N8N WEBHOOK URL FOR THE SINGLE-PART WORKFLOW
     const singlePartWebhookUrl = 'https://transformco.app.n8n.cloud/webhook/2a1d2507-373b-43a7-9ec9-3965b56dbcc3';
-
+    
     toggleLoading(true);
 
     try {
@@ -53,7 +57,7 @@ async function searchSinglePart() {
         });
         const resultData = await response.json();
         console.log("RAW DATA (SINGLE) FROM N8N:", resultData);
-        displayResults([resultData]); // Pass the single result in an array for consistency
+        displayResults([resultData]);
 
     } catch (error) {
         console.error('Error:', error);
@@ -72,7 +76,6 @@ async function searchMultipleParts() {
         return;
     }
 
-    // THIS IS YOUR PRODUCTION N8N WEBHOOK URL FOR THE MULTI-PART WORKFLOW
     const multiPartWebhookUrl = 'https://n8n.srv971243.hstgr.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
 
     toggleLoading(true);
@@ -99,16 +102,23 @@ function toggleLoading(isLoading) {
     const searchButton = document.getElementById('searchButton');
     const searchMultiButton = document.getElementById('searchMultiButton');
     const resultsContainer = document.getElementById('resultsContainer');
+    const partNumberInput = document.getElementById('partNumberInput');
+    const csvFileInput = document.getElementById('csvFileInput');
+
 
     if (isLoading) {
         loader.classList.remove('hidden');
         resultsContainer.innerHTML = '';
         searchButton.disabled = true;
         searchMultiButton.disabled = true;
+        partNumberInput.disabled = true;
+        csvFileInput.disabled = true;
     } else {
         loader.classList.add('hidden');
         searchButton.disabled = false;
         searchMultiButton.disabled = false;
+        partNumberInput.disabled = false;
+        csvFileInput.disabled = false;
     }
 }
 
@@ -128,7 +138,6 @@ function displayResults(data) {
         const recommendation = partData.recommendation || 'No recommendation provided.';
         const results = partData.results || [];
 
-        // Display the recommendation in the summary container
         const summaryParagraph = document.createElement('p');
         summaryParagraph.className = 'recommendation-summary';
         summaryParagraph.innerHTML = `<strong>Recommendation for ${partNumber}:</strong> ${recommendation}`;
