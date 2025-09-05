@@ -28,12 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // New logic: Click the button to trigger the file input
     searchMultiButton.addEventListener('click', () => {
         csvFileInput.click();
     });
 
-    // New logic: Listen for a file selection on the file input
     csvFileInput.addEventListener('change', searchMultipleParts);
 });
 
@@ -60,7 +58,12 @@ async function searchSinglePart() {
         });
         const resultData = await response.json();
         console.log("RAW DATA (SINGLE) FROM N8N:", resultData);
-        displayResults([resultData]);
+        // Pass a formatted object to displayResults
+        displayResults([{
+            partNumber: partNumber,
+            recommendation: resultData.summary,
+            results: resultData.results
+        }]);
 
     } catch (error) {
         console.error('Error:', error);
@@ -80,6 +83,11 @@ async function searchMultipleParts() {
     }
 
     const multiPartWebhookUrl = 'https://n8n.srv971243.hstgr.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
+
+    if (!multiPartWebhookUrl) {
+        alert('Multi-part webhook URL is not configured.');
+        return;
+    }
 
     toggleLoading(true);
 
@@ -109,6 +117,7 @@ function toggleLoading(isLoading) {
     const searchMultiButton = document.getElementById('searchMultiButton');
     const partNumberInput = document.getElementById('partNumberInput');
     const csvFileInput = document.getElementById('csvFileInput');
+
 
     if (isLoading) {
         loader.classList.remove('hidden');
