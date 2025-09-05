@@ -30,8 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Attach click listener for multi-part search
-    searchMultiButton.addEventListener('click', searchMultipleParts);
+    // Attach click listener for multi-part search to trigger the file dialog
+    searchMultiButton.addEventListener('click', () => {
+        csvFileInput.click();
+    });
+
+    // Listen for a file selection on the file input
+    csvFileInput.addEventListener('change', searchMultipleParts);
 });
 
 async function searchSinglePart() {
@@ -78,12 +83,20 @@ async function searchMultipleParts() {
 
     const multiPartWebhookUrl = 'https://n8n.srv971243.hstgr.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
 
+    if (!multiPartWebhookUrl) {
+        alert('Multi-part webhook URL is not configured.');
+        return;
+    }
+
     toggleLoading(true);
 
     try {
         const response = await fetch(multiPartWebhookUrl, {
             method: 'POST',
-            body: file
+            body: file,
+            headers: {
+              'Content-Type': 'text/csv'
+            }
         });
         const resultData = await response.json();
         console.log("RAW DATA (MULTI) FROM N8N:", resultData);
@@ -91,7 +104,7 @@ async function searchMultipleParts() {
 
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('resultsContainer').innerHTML = `<p style="color: red;">An error occurred processing the CSV file.</p>`;
+        document.getElementById('resultsContainer').innerHTML = `<p style="color: red;">An error occurred processing the CSV file. Please check the file format.</p>`;
     } finally {
         toggleLoading(false);
     }
