@@ -112,7 +112,9 @@ function displayResults(data) {
         const price = result.price || 'N/A';
         const availability = result.availability || 'Not Specified';
         const url = result.url || '#';
-        const stockColor = availability && availability.toUpperCase().includes('IN STOCK') ? 'green' : 'red';
+        
+        // This is the key fix: Check if availability is a string before using toUpperCase()
+        const stockColor = (typeof availability === 'string' && availability.toUpperCase().includes('IN STOCK')) ? 'green' : 'red';
 
         return `
             <div class="vendor-details">
