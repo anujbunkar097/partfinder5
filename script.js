@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const partNumberInput = document.getElementById('partNumberInput');
     const csvFileInput = document.getElementById('csvFileInput');
 
+    // Attach change listener to radio buttons
     searchTypeRadios.forEach(radio => {
         radio.addEventListener('change', (event) => {
             if (event.target.value === 'single') {
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Attach click and keypress listeners for single-part search
     searchButton.addEventListener('click', searchSinglePart);
     partNumberInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -28,10 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Attach click listener for multi-part search to trigger the file dialog
     searchMultiButton.addEventListener('click', () => {
         csvFileInput.click();
     });
 
+    // Listen for a file selection on the file input
     csvFileInput.addEventListener('change', searchMultipleParts);
 });
 
