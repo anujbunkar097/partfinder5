@@ -58,12 +58,15 @@ async function searchSinglePart() {
         });
         const resultData = await response.json();
         console.log("RAW DATA (SINGLE) FROM N8N:", resultData);
-        // Pass a formatted object to displayResults
-        displayResults([{
+        
+        // This is the fix: create a new object that matches the expected structure.
+        const formattedData = [{
             partNumber: partNumber,
             recommendation: resultData.summary,
             results: resultData.results
-        }]);
+        }];
+        
+        displayResults(formattedData);
 
     } catch (error) {
         console.error('Error:', error);
