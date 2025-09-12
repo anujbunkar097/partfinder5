@@ -1,69 +1,107 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  margin: 0;
-  padding: 0;
-}
+document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-.container {
-  max-width: 1000px;
-  margin: auto;
-  padding: 20px;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
+  const fileInput = document.getElementById("fileInput");
+  if (!fileInput.files.length) {
+    alert("Please select a CSV file first.");
+    return;
+  }
 
-h1 {
-  text-align: center;
-}
+  const loadingEl = document.getElementById("loading");
+  loadingEl.classList.remove("hidden");
 
-form {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
 
-input[type="file"] {
-  margin-right: 10px;
-}
+  try {
+    const res = await fetch("https://n8n.srv971243.hstgr.cloud/webhook/edf5458c-e6c7-48f9-bfde-6318e2e64da9", {
+      method: "POST",
+      body: formData,
+    });
 
-.loading {
-  text-align: center;
-  font-weight: bold;
-  margin: 20px 0;
-}
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+    renderResults(data);
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. See console for details.");
+  } finally {
+    loadingEl.classList.add("hidden");
+  }
+});
 
-.hidden {
-  display: none;
-}
+function renderResults(parts) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = "";
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 30px;
-}
+  if (!parts || !parts.length) {
+    resultsDiv.textContent = "No results found.";
+    return;
+  }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
+  parts.forEach((part) => {
+    const partDiv = document.createElement("div");
 
-th {
-  background: #eee;
-}
+    const title = document.createElement("h2");
+    title.textContent = part.partNumber;
+    partDiv.appendChild(title);
 
-a {
-  color: #0066cc;
-  text-decoration: none;
-}
+    if (part.recommendation) {
+      const rec = document.createElement("div");
+      rec.className = "recommendation";
+      rec.textContent = `Recommendation: ${part.recommendation}`;
+      partDiv.appendChild(rec);
+    }
 
-a:hover {
-  text-decoration: underline;
-}
+    const table = document.createElement("table");
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Website</th>
+          <th>Price</th>
+          <th>Availability</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
 
-.recommendation {
-  font-style: italic;
-  color: #333;
-  margin-bottom: 10px;
+    (part.results || []).forEach((result) => {
+      const row = document.createElement("tr");
+
+      // Site with hyperlink
+      const siteCell = document.createElement("td");
+      if (result.url) {
+        siteCell.innerHTML = `<a href="${result.url}" target="_blank" rel="noopener noreferrer">${result.site}</a>`;
+      } else {
+        siteCell.textContent = result.site;
+      }
+      row.appendChild(siteCell);
+
+      // Price
+      const priceCell = document.createElement("td");
+      let price = result.price;
+      if (typeof price === "number") {
+        price = `$${price.toFixed(2)}`;
+      }
+      priceCell.textContent = price || "N/A";
+      row.appendChild(priceCell);
+
+      // Availability (green/red)
+      const availCell = document.createElement("td");
+      const availStr = String(result.availability || "").trim();
+      const isInStock =
+        /in[\s-]?stock/i.test(availStr) ||
+        /^instock$/i.test(availStr) ||
+        /available/i.test(availStr);
+      availCell.style.color = isInStock ? "green" : "red";
+      availCell.textContent = result.availability || "Unknown";
+      row.appendChild(availCell);
+
+      tbody.appendChild(row);
+    });
+
+    partDiv.appendChild(table);
+    resultsDiv.appendChild(partDiv);
+  });
 }
