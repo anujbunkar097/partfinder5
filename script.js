@@ -1,161 +1,69 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
-    const singlePartForm = document.getElementById('singlePartForm');
-    const multiPartForm = document.getElementById('multiPartForm');
-
-    searchTypeRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            if (event.target.value === 'single') {
-                singlePartForm.classList.remove('hidden');
-                multiPartForm.classList.add('hidden');
-            } else {
-                singlePartForm.classList.add('hidden');
-                multiPartForm.classList.remove('hidden');
-            }
-            document.getElementById('resultsContainer').innerHTML = '';
-            document.getElementById('summaryContainer').innerHTML = '';
-        });
-    });
-
-    document.getElementById('searchButton').addEventListener('click', searchSinglePart);
-    document.getElementById('partNumberInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchSinglePart();
-        }
-    });
-
-    document.getElementById('searchMultiButton').addEventListener('click', searchMultipleParts);
-});
-
-// Note: Update this URL if you have a separate single-part webhook
-async function searchSinglePart() {
-    alert("Single part search is not yet configured with the new batch workflow.");
-    // Implementation for single part search would go here if needed.
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
 }
 
-async function searchMultipleParts() {
-    const fileInput = document.getElementById('csvFileInput');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        alert('Please select a CSV file to upload.');
-        return;
-    }
-
-    // THIS IS YOUR PRODUCTION N8N WEBHOOK URL FOR THE MULTI-PART WORKFLOW
-    const multiPartWebhookUrl = 'https://n8n.srv971243.hstgr.cloud/webhook-test/edf5458c-e6c7-48f9-bfde-6318e2e64da9';
-
-    const formData = new FormData();
-    formData.append('file', file); // 'file' must match binary property in Webhook node
-
-    toggleLoading(true);
-
-    try {
-        const response = await fetch(multiPartWebhookUrl, {
-            method: 'POST',
-            body: formData
-        });
-        const resultData = await response.json();
-        console.log("RAW DATA (MULTI) FROM N8N:", resultData);
-        displayResults(resultData);
-
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('resultsContainer').innerHTML = `<p style="color: red;">An error occurred processing the CSV file.</p>`;
-    } finally {
-        toggleLoading(false);
-    }
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-function toggleLoading(isLoading) {
-    const loader = document.getElementById('loader');
-    const searchButton = document.getElementById('searchButton');
-    const searchMultiButton = document.getElementById('searchMultiButton');
-    const resultsContainer = document.getElementById('resultsContainer');
-
-    if (isLoading) {
-        loader.classList.remove('hidden');
-        resultsContainer.innerHTML = '';
-        searchButton.disabled = true;
-        searchMultiButton.disabled = true;
-    } else {
-        loader.classList.add('hidden');
-        searchButton.disabled = false;
-        searchMultiButton.disabled = false;
-    }
+h1 {
+  text-align: center;
 }
 
-function displayResults(data) {
-    const resultsContainer = document.getElementById('resultsContainer');
-    resultsContainer.innerHTML = '';
+form {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
-    if (!data || data.length === 0) {
-        resultsContainer.innerHTML = '<p>No results found for the uploaded parts.</p>';
-        return;
-    }
+input[type="file"] {
+  margin-right: 10px;
+}
 
-    const table = document.createElement('table');
-    table.className = 'results-table';
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Part Number</th>
-                <th>Vendor Option</th>
-                <th>AI Recommendation</th>
-            </tr>
-        </thead>
-    `;
-    const tbody = document.createElement('tbody');
+.loading {
+  text-align: center;
+  font-weight: bold;
+  margin: 20px 0;
+}
 
-    const formatVendorCell = (result) => {
-        const title = result.site || 'Unknown Site';
-        const price = result.price || 'N/A';
-        const availability = result.availability || 'Not Specified';
-        const url = result.url || '#';
-        
-        // This is the key fix: Check if availability is a string before using toUpperCase()
-        const stockColor = (typeof availability === 'string' && availability.toUpperCase().includes('IN STOCK')) ? 'green' : 'red';
+.hidden {
+  display: none;
+}
 
-        return `
-            <div class="vendor-details">
-                <strong><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></strong>
-                <div><strong>Price:</strong> ${price}</div>
-                <div><strong>Stock:</strong> <span style="color: ${stockColor};">${availability}</span></div>
-            </div>
-        `;
-    };
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
 
-    data.forEach(partData => {
-        const partNumber = partData.partNumber;
-        const recommendation = partData.recommendation || 'No recommendation provided.';
-        const results = partData.results || [];
-        const rowspan = results.length > 0 ? results.length : 1;
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
 
-        if (results.length > 0) {
-            results.forEach((result, index) => {
-                const tr = document.createElement('tr');
-                if (index === 0) {
-                    tr.innerHTML = `
-                        <td class="part-number-cell" rowspan="${rowspan}">${partNumber}</td>
-                        <td>${formatVendorCell(result)}</td>
-                        <td class="recommendation-cell" rowspan="${rowspan}">${recommendation}</td>
-                    `;
-                } else {
-                    tr.innerHTML = `<td>${formatVendorCell(result)}</td>`;
-                }
-                tbody.appendChild(tr);
-            });
-        } else {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="part-number-cell">${partNumber}</td>
-                <td>No results found.</td>
-                <td class="recommendation-cell">${recommendation}</td>
-            `;
-            tbody.appendChild(tr);
-        }
-    });
+th {
+  background: #eee;
+}
 
-    table.appendChild(tbody);
-    resultsContainer.appendChild(table);
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.recommendation {
+  font-style: italic;
+  color: #333;
+  margin-bottom: 10px;
 }
