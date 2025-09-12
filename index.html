@@ -1,47 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Part Finder • AI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Part Finder</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <canvas id="stars"></canvas>
-
-  <header class="topbar">
-    <div class="brand">Part Finder <span class="pill">AI</span></div>
-    <a class="gh" href="#" target="_blank" rel="noopener">GitHub Pages</a>
-  </header>
-
-  <main class="shell">
-    <section class="card">
-      <h1>Find the best source for your parts</h1>
-      <p class="sub">Upload a CSV of part numbers. We’ll search vendors, show prices & stock, and recommend the best option.</p>
-
-      <form id="uploadForm" class="uploader">
-        <label class="drop">
-          <input id="fileInput" type="file" accept=".csv" />
-          <span>Choose CSV or drop it here</span>
-        </label>
-        <button type="submit" class="btn">Upload & Analyze</button>
-      </form>
-
-      <div id="loading" class="loading hidden">
-        <div class="spinner"></div>
-        <span>Crunching vendor data…</span>
-      </div>
-    </section>
-
-    <section id="results" class="results"></section>
-  </main>
-
-  <footer class="footer">
-    <span>Built for speed • Powered by n8n + LLM</span>
-  </footer>
-
+  <div class="container">
+    <h1>Part Finder</h1>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" accept=".csv" required>
+      <button type="submit">Upload & Analyze</button>
+    </form>
+    <div id="results"></div>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
