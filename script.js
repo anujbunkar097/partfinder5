@@ -21,7 +21,28 @@ document.getElementById("uploadForm").addEventListener("submit", async (e) => {
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
-    renderResults(data);
+    
+    // Extract parts from OpenAI response structure
+    let parts = [];
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        if (item.message && item.message.content) {
+          // This is OpenAI response structure
+          const content = item.message.content;
+          parts.push({
+            partNumber: content.partNumber,
+            recommendation: content.recommendation,
+            bestOption: content.bestOption,
+            results: content.results || []
+          });
+        } else if (item.partNumber) {
+          // Direct part structure
+          parts.push(item);
+        }
+      }
+    }
+    
+    renderResults(parts);
   } catch (err) {
     console.error(err);
     alert("Something went wrong. See console for details.");
